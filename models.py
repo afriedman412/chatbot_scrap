@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Literal
 
 class EncoderRNN(nn.Module):
     def __init__(self, hidden_size, embedding, n_layers=1, dropout=0):
@@ -32,9 +31,11 @@ class EncoderRNN(nn.Module):
         return outputs, hidden
 
 class Attn(nn.Module):
-    def __init__(self, method: Literal["dot", "general", "concat", None], hidden_size):
+    def __init__(self, method, hidden_size):
         super(Attn, self).__init__()
         self.method = method
+        if self.method not in ['dot', 'general', 'concat']:
+            raise ValueError(self.method, "is not an appropriate attention method.")
         self.hidden_size = hidden_size
 
         if self.method == 'general':
