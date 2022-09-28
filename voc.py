@@ -1,5 +1,5 @@
 import torch
-from typing import Union, Literal
+from typing import Union
 import itertools
 from config import PAD_token, SOS_token, EOS_token
 
@@ -82,7 +82,7 @@ class Voc:
             ] for seq in l]
         return m
 
-    def var_prep(self, l, type=Literal["input", "output"]):
+    def var_prep(self, l, type: str):
         # replaces input_var and output_var
         batch = [self.index_from_sentence(sentence) for sentence in l]
         lengths = [len(index) for index in batch]
@@ -95,7 +95,7 @@ class Voc:
             mask = torch.BoolTensor(mask)
             return pad_var, mask, max_target_len
         
-        else:
+        elif type=="input":
             return pad_var, lengths
 
     def batch2train(self, pair_batch):
