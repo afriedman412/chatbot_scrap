@@ -88,7 +88,7 @@ class Voc:
     def var_prep(self, l, type: str):
         # replaces input_var and output_var
         batch = [self.index_from_sentence(sentence) for sentence in l]
-        lengths = [len(index) for index in batch]
+        lengths = torch.tensor([len(indexes) for indexes in batch])
         pad_list = self.zero_padding(batch)
         pad_var = torch.LongTensor(pad_list)
         

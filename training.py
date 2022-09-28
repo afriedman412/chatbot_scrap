@@ -4,7 +4,7 @@ import random
 import os
 from voc import Voc
 from data_tools import normalize_str
-from config import device, SOS_token, checkpoint
+from config import device, SOS_token, checkpoint, MAX_LENGTH, teacher_forcing_ratio
 
 
 def maskNLLLoss(input, target, mask):
@@ -18,7 +18,7 @@ def train(
     input_var, lengths, target_var, mask, 
     max_target_len, encoder, decoder, embedding, 
     encoder_optimizer, decoder_optimizer,
-    batch_size, clip, teacher_forcing_ratio, max_length, 
+    batch_size, clip 
     ):
 
     # zero grads
@@ -36,7 +36,7 @@ def train(
     # initialize vars
     loss = 0
     print_losses = []
-    n_totalengths = 0
+    n_totals = 0
 
     # forward pass thru encoder
     encoder_outputs, encoder_hidden =encoder(input_var, lengths)
@@ -82,32 +82,35 @@ def train(
 
     return sum(print_losses)/n_totals
 
-def train_iters(model_name, voc: Voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer, embedding, encoder_n_layers, decoder_n_layers, hidden_size, save_dir, n_iters, batch_size, print_every, save_every, clip, corpus_name, load_file_name=None):
+def train_iters(
+    model_name, voc: Voc, pairs, encoder, decoder, encoder_optimizer, 
+    decoder_optimizer, embedding, encoder_n_layers, decoder_n_layers, 
+    hidden_size, save_dir, n_iters, batch_size, print_every, save_every, 
+    clip, corpus_name, load_file_name=None):
 
     # load batches for each iteration
-    tr_batches = [
-        voc.batch2train(
+    tr_batches = [voc.batch2train(
             [random.choice(pairs) for _ in range(batch_size)]
-            ) for _ in range(n_iters)
-            ]
+            ) for _ in range(n_iters)]
 
     # initialize
     print("initializing...")
     iter = 1
     print_loss = 0
     if load_file_name:
-        start_iteration = checkpoint['iteration'] + 1
+        iter = checkpoint['iteration'] + 1
 
     # training loop
     print("training...")
-    for i in range(start_iteration, n_iters+1):
+    for i in range(iter, n_iters+1):
         batch = tr_batches[i-1]
         # extract fields
         input_var, lengths, target_var, mask, max_target_len = batch
 
         # run training loop w batch
         loss = train(
-            input_var, lengths, target_var, mask, max_target_len, encoder, decoder, embedding, encoder_optimizer, decoder_optimizer, batch_size, clip
+            input_var, lengths, target_var, mask, max_target_len, encoder, decoder, 
+            embedding, encoder_optimizer, decoder_optimizer, batch_size, clip
         )
         print_loss += loss
 
