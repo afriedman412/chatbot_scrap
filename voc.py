@@ -8,6 +8,9 @@ class Voc:
         self.name = name
         self.trimmed = False
         self.intialize_dicts()
+
+    def __len__(self):
+        return len(self.index2word)
     
     def intialize_dicts(self):
         self.word2index = {}
